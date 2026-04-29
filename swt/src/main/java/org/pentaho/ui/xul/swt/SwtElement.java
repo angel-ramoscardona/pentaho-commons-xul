@@ -117,8 +117,9 @@ public class SwtElement extends AbstractXulComponent {
             ( (Control) mo ).setParent( (Composite) getManagedObject() );
           }
         } else if ( mo instanceof Viewer ) {
-          if ( ( (Viewer) mo ).getControl() != getManagedObject() && getManagedObject() instanceof Composite ) {
-            ( (Viewer) mo ).getControl().setParent( (Composite) getManagedObject() );
+          Viewer viewer = (Viewer) mo;
+          if ( viewer.getControl() != getManagedObject() && getManagedObject() instanceof Composite ) {
+            viewer.getControl().setParent( (Composite) getManagedObject() );
           }
         }
       }
@@ -129,13 +130,22 @@ public class SwtElement extends AbstractXulComponent {
       layout();
       ( (XulComponent) e ).onDomReady();
     }
-
+    if ( comp.getManagedObject() instanceof Viewer ) {
+      Viewer viewer = (Viewer) comp.getManagedObject();
+      viewer.getControl().setVisible( true );
+    }
   }
 
   public void addChildAt( Element c, int pos ) {
     super.addChildAt( c, pos );
     if ( initialized ) {
       layout();
+    }
+    XulComponent comp = (XulComponent) c;
+    Object mo = comp.getManagedObject();
+    if ( mo instanceof Viewer && ( (Viewer) mo ).getControl() != null ) {
+      Viewer viewer = (Viewer) mo;
+      viewer.getControl().setVisible( true );
     }
   }
 
@@ -148,6 +158,11 @@ public class SwtElement extends AbstractXulComponent {
         Widget thisWidget = (Widget) comp.getManagedObject();
         if ( thisWidget != null && !thisWidget.isDisposed() ) {
           thisWidget.dispose();
+        }
+      } else if ( comp.getManagedObject() instanceof Viewer ) {
+        Viewer viewer = (Viewer) comp.getManagedObject();
+        if ( viewer.getControl() != null && !viewer.getControl().isDisposed() ) {
+          viewer.getControl().setVisible( false );
         }
       }
     }
